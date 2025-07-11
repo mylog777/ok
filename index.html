@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>바이오리듬 계산기</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; text-align: center; padding: 30px; }
+    input, button { padding: 10px; margin: 5px; font-size: 16px; }
+    canvas { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h2>📊 오늘의 바이오리듬 계산기</h2>
+  <input type="date" id="birthDate" />
+  <button onclick="calcBiorhythm()">계산하기</button>
+
+  <canvas id="biorhythmChart" width="400" height="250"></canvas>
+
+  <script>
+    function calcBiorhythm() {
+      var birthDateInput = document.getElementById("birthDate").value;
+      if (!birthDateInput) {
+        alert("생년월일을 선택해주세요.");
+        return;
+      }
+
+      var birthDate = new Date(birthDateInput);
+      var today = new Date();
+      var diff = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24));
+
+      var physical = Math.sin((2 * Math.PI * diff) / 23) * 100;
+      var emotional = Math.sin((2 * Math.PI * diff) / 28) * 100;
+      var intellectual = Math.sin((2 * Math.PI * diff) / 33) * 100;
+
+      var ctx = document.getElementById("biorhythmChart").getContext("2d");
+
+      // 기존 차트 제거 (중복 방지)
+      if (window.myChart) {
+        window.myChart.destroy();
+      }
+
+      window.myChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["신체", "감정", "지성"],
+          datasets: [
+            {
+              label: "오늘의 바이오리듬 (%)",
+              data: [
+                physical.toFixed(2),
+                emotional.toFixed(2),
+                intellectual.toFixed(2)
+              ],
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.7)",
+                "rgba(54, 162, 235, 0.7)",
+                "rgba(255, 206, 86, 0.7)"
+              ],
+              borderColor: [
+                "rgba(255, 99, 132, 1)",
+                "rgba(54, 162, 235, 1)",
+                "rgba(255, 206, 86, 1)"
+              ],
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          indexAxis: "y",
+          scales: {
+            x: {
+              min: -100,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
