@@ -1,84 +1,139 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>바이오리듬 계산기</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <style>
-    body { font-family: 'Noto Sans KR', sans-serif; text-align: center; padding: 30px; }
-    input, button { padding: 10px; margin: 5px; font-size: 16px; }
-    canvas { margin-top: 20px; }
-  </style>
+<meta charset="UTF-8" />
+<title>바이오리듬 계산기</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    background: #f0f4f8;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    color: #333;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
+  }
+
+  #birthDate {
+    width: 280px;
+    height: 45px;
+    font-size: 20px;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+  }
+
+  #birthDate:focus {
+    outline: none;
+    border-color: #4a90e2;
+  }
+
+  button {
+    width: 140px;
+    height: 45px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 40px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #357abd;
+  }
+
+  #biorhythmChart {
+    width: 480px !important;
+    height: 320px !important;
+    background: white;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    border-radius: 12px;
+  }
+</style>
 </head>
 <body>
 
-  <h2>📊 오늘의 바이오리듬 계산기</h2>
-  <input type="date" id="birthDate" />
-  <button onclick="calcBiorhythm()">계산하기</button>
+<h2>📊오늘의 바이오리듬 계산기</h2>
+<input type="date" id="birthDate" />
+<button type="button" onclick="calcBiorhythm()">계산하기</button>
 
-  <canvas id="biorhythmChart" width="400" height="250"></canvas>
+<canvas id="biorhythmChart" width="480" height="320"></canvas>
 
-  <script>
-    function calcBiorhythm() {
-      var birthDateInput = document.getElementById("birthDate").value;
-      if (!birthDateInput) {
-        alert("생년월일을 선택해주세요.");
-        return;
-      }
+<script>
+function calcBiorhythm() {
+  var birthDate = new Date(document.getElementById("birthDate").value);
+  var today = new Date();
+  var diff = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24));
 
-      var birthDate = new Date(birthDateInput);
-      var today = new Date();
-      var diff = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24));
+  var physical = Math.sin((2 * Math.PI * diff) / 23) * 100;
+  var emotional = Math.sin((2 * Math.PI * diff) / 28) * 100;
+  var intellectual = Math.sin((2 * Math.PI * diff) / 33) * 100;
 
-      var physical = Math.sin((2 * Math.PI * diff) / 23) * 100;
-      var emotional = Math.sin((2 * Math.PI * diff) / 28) * 100;
-      var intellectual = Math.sin((2 * Math.PI * diff) / 33) * 100;
+  var ctx = document.getElementById("biorhythmChart").getContext("2d");
 
-      var ctx = document.getElementById("biorhythmChart").getContext("2d");
+  if(window.myChart) {
+    window.myChart.destroy();
+  }
 
-      // 기존 차트 제거 (중복 방지)
-      if (window.myChart) {
-        window.myChart.destroy();
-      }
-
-      window.myChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["신체", "감정", "지성"],
-          datasets: [
-            {
-              label: "오늘의 바이오리듬 (%)",
-              data: [
-                physical.toFixed(2),
-                emotional.toFixed(2),
-                intellectual.toFixed(2)
-              ],
-              backgroundColor: [
-                "rgba(255, 99, 132, 0.7)",
-                "rgba(54, 162, 235, 0.7)",
-                "rgba(255, 206, 86, 0.7)"
-              ],
-              borderColor: [
-                "rgba(255, 99, 132, 1)",
-                "rgba(54, 162, 235, 1)",
-                "rgba(255, 206, 86, 1)"
-              ],
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          indexAxis: "y",
-          scales: {
-            x: {
-              min: -100,
-              max: 100
-            }
+  window.myChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["신체", "감정", "지성"],
+      datasets: [{
+        label: "오늘의 바이오리듬 (%)",
+        data: [physical.toFixed(2), emotional.toFixed(2), intellectual.toFixed(2)],
+        backgroundColor: [
+          "rgba(255, 99, 132, 0.7)",
+          "rgba(54, 162, 235, 0.7)",
+          "rgba(255, 206, 86, 0.7)"
+        ],
+        borderColor: [
+          "rgba(255, 99, 132, 1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)"
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      plugins: {
+        legend: {
+          labels: {
+            font: { size: 20 }
           }
         }
-      });
+      },
+      scales: {
+        y: {
+          ticks: {
+            font: { size: 20 }
+          }
+        },
+        x: {
+          min: -100,
+          max: 100,
+          ticks: {
+            font: { size: 20 }
+          }
+        }
+      }
     }
-  </script>
+  });
+}
+</script>
 
 </body>
 </html>
